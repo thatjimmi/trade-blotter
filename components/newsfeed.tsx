@@ -43,7 +43,7 @@ const NewsFeed = () => {
     {
       type: 'stock',
       symbol: 'AAPL',
-      logo: '/api/placeholder/32/32',
+      logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
       change: -1.48,
       content: 'Apple agreed to pay $95 million in cash to settle a proposed class action lawsuit claiming that its voice-activated Siri assistant violated users\' privacy.',
       time: 'Today'
@@ -51,13 +51,13 @@ const NewsFeed = () => {
     {
       type: 'stock',
       symbol: 'DIS',
-      logo: '/api/placeholder/32/32',
+      logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
       content: 'Disney nears a deal to combine Hulu + Live TV with Fubo, per Bloomberg. Both Walt Disney Co and FuboTV could significantly impact the streaming space with this merger.',
       time: 'Today'
     },
     {
       type: 'intelligence',
-      logo: '/api/placeholder/32/32',
+      logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
       symbol: 'Fey Intelligence',
       content: 'The U.S. services sector reports a decline in the PMI to 56.8, after expectations had been set at maintaining previous levels. In Germany, the monthly inflation drops.',
       time: 'Today'

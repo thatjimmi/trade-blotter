@@ -269,7 +269,8 @@ const FinancialDashboard = () => {
       {/* Header with Stock Price */}
       <div className="mb-8">
         <div className="flex items-center space-x-3 mb-2">
-          <img src="/api/placeholder/32/32" alt="NVDA" className="w-8 h-8 rounded-lg" />
+          <img src="https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece
+" alt="NVDA" className="w-8 h-8 rounded-lg" />
           <div className="flex items-baseline space-x-2">
             <span className="text-xl font-semibold">NVDA</span>
             <span className="text-xl">1,147.78</span>

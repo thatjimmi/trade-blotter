@@ -4,7 +4,7 @@ const stocks = [
   {
     symbol: 'NVDA',
     name: 'NVIDIA Corp',
-    logo: '/api/placeholder/32/32',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     currency: 'USD',
     exchange: 'Nasdaq',
     growth: 0.2241,
@@ -12,7 +12,7 @@ const stocks = [
   {
     symbol: 'MSFT',
     name: 'Microsoft Corp',
-    logo: '/api/placeholder/32/32',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     currency: 'USD',
     exchange: 'Nasdaq',
     growth: 17.968,
@@ -20,7 +20,7 @@ const stocks = [
   {
     symbol: 'AAPL',
     name: 'Apple Inc.',
-    logo: '/api/placeholder/32/32',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     currency: 'USD',
     exchange: 'Nasdaq',
     growth: 7.7912,
@@ -28,7 +28,7 @@ const stocks = [
   {
     symbol: 'TSLA',
     name: 'Tesla Inc.',
-    logo: '/api/placeholder/32/32',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     currency: 'USD',
     exchange: 'Nasdaq',
     growth: -51.836,
@@ -36,7 +36,7 @@ const stocks = [
   {
     symbol: 'AMZN',
     name: 'Amazon.com Inc',
-    logo: '/api/placeholder/32/32',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     currency: 'USD',
     exchange: 'Nasdaq',
     growth: 12.345,
@@ -44,7 +44,7 @@ const stocks = [
   {
     symbol: 'QQQ',
     name: 'Invesco QQQ',
-    logo: '/api/placeholder/32/32',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     currency: 'USD',
     exchange: 'Nasdaq',
     growth: 8.765,
@@ -52,7 +52,7 @@ const stocks = [
   {
     symbol: 'F',
     name: 'Ford Motor Co.',
-    logo: '/api/placeholder/32/32',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     currency: 'USD',
     exchange: 'NYSE',
     growth: -3.421,

@@ -6,7 +6,7 @@ const allStocks = [
   {
     symbol: 'RGTI',
     name: 'Rigetti Computing Inc.',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Tech',
     growth: -8.361,
     performance1Y: -25.5,
@@ -19,7 +19,7 @@ const allStocks = [
   {
     symbol: 'SANA',
     name: 'Sana Biotechnology L.',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Healthcare',
     growth: -202.344,
     performance1Y: -45.2,
@@ -32,7 +32,7 @@ const allStocks = [
   {
     symbol: 'NVDA',
     name: 'NVIDIA Corporation',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Tech',
     growth: 125.852,
     performance1Y: 180.5,
@@ -45,7 +45,7 @@ const allStocks = [
   {
     symbol: 'MSFT',
     name: 'Microsoft Corporation',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Tech',
     growth: 15.234,
     performance1Y: 45.8,
@@ -58,7 +58,7 @@ const allStocks = [
   {
     symbol: 'AAPL',
     name: 'Apple Inc.',
-    logo: '/api/placeholder/24/24', 
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Tech',
     growth: 8.456,
     performance1Y: 15.2,
@@ -71,7 +71,7 @@ const allStocks = [
   {
     symbol: 'GOOGL',
     name: 'Alphabet Inc.',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Comm Serv',
     growth: 12.789,
     performance1Y: 25.4,
@@ -84,7 +84,7 @@ const allStocks = [
   {
     symbol: 'AMZN',
     name: 'Amazon.com Inc.',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Tech',
     growth: 10.567,
     performance1Y: 35.7,
@@ -97,7 +97,7 @@ const allStocks = [
   {
     symbol: 'META',
     name: 'Meta Platforms Inc.',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Comm Serv',
     growth: 18.234,
     performance1Y: 150.3,
@@ -110,7 +110,7 @@ const allStocks = [
   {
     symbol: 'JNJ',
     name: 'Johnson & Johnson',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Healthcare',
     growth: 5.678,
     performance1Y: -8.4,
@@ -123,7 +123,7 @@ const allStocks = [
   {
     symbol: 'PFE',
     name: 'Pfizer Inc.',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Healthcare',
     growth: -12.345,
     performance1Y: -35.6,
@@ -136,7 +136,7 @@ const allStocks = [
   {
     symbol: 'VALE',
     name: 'Vale S.A.',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Basic Mats',
     growth: -5.432,
     performance1Y: -12.5,
@@ -149,7 +149,7 @@ const allStocks = [
   {
     symbol: 'SNAP',
     name: 'Snap Inc.',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Comm Serv',
     growth: -25.678,
     performance1Y: -45.6,
@@ -162,7 +162,7 @@ const allStocks = [
   {
     symbol: 'FCX',
     name: 'Freeport-McMoRan Inc.',
-    logo: '/api/placeholder/24/24',
+    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
     sector: 'Basic Mats',
     growth: -8.901,
     performance1Y: -15.7,
