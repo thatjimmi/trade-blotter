@@ -265,7 +265,7 @@ const TradeBlotter = () => {
         {/* Context Menu */}
         {contextMenu && (
           <div 
-            className="fixed bg-gray-900 border border-gray-700 rounded-lg shadow-lg py-2 z-50"
+            className="fixed bg-gray-900 border border-gray-700 w-48 rounded-lg shadow-lg z-50"
             style={{ top: contextMenu.y, left: contextMenu.x }}
           >
             <button 
