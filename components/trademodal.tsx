@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, AlertTriangle, Info } from 'lucide-react';
-import { NewTradeModalProps, TradeFilterModalProps, TradeDetailsDrawerProps, TradeFilters, TradeData, Trade } from '../types/trading';
+import { X } from 'lucide-react';
+import { NewTradeModalProps, TradeFilterModalProps, TradeDetailsDrawerProps, TradeFilters, TradeData } from '../types/trading';
 
 export const NewTradeModal = ({ isOpen, onClose, onSubmit }: NewTradeModalProps) => {
   const [tradeData, setTradeData] = useState<TradeData>({

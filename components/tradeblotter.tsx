@@ -1,18 +1,13 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
-
 import { 
   CircleDollarSign, 
   TrendingUp, 
-  AlertTriangle, 
-  FileText, 
-  Check, 
-  Clock,
+  AlertTriangle,   
+  Check,
   X,
   Filter,
   Download,
-  Upload,
   BarChart2,
   Settings,
   ChevronDown, ChevronUp,
