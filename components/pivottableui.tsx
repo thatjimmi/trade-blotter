@@ -98,7 +98,6 @@ const PivotTableUI = ({ data, initialConfig }) => {
   const dimensions = pivotTable.getDimensions();
   const numericDimensions = pivotTable.getNumericDimensions();
   const headers = pivotTable.getHeaders();
-  const rows = pivotTable.getRows();
 
   const handleRowDimensionChange = (dimensions) => {
     setConfig(prev => ({
@@ -150,6 +149,122 @@ const PivotTableUI = ({ data, initialConfig }) => {
       ...prev,
       tableConfigs: updatedConfigs
     }));
+  };
+
+  // Get hierarchical rows data
+  const getHierarchicalRows = () => {
+    const filteredData = pivotTable.filterData();
+    const { rowDimensions } = config;
+
+    const buildRowHierarchy = (path = [], depth = 0) => {
+      if (depth >= rowDimensions.length) return null;
+
+      const currentDimension = rowDimensions[depth];
+      const matchingRows = filteredData.filter(row =>
+        path.every((value, i) => String(row[rowDimensions[i]]) === value)
+      );
+
+      const dimensionValues = [...new Set(
+        matchingRows.map(row => String(row[currentDimension]))
+      )].sort();
+
+      return dimensionValues.map(value => {
+        const newPath = [...path, value];
+        const children = buildRowHierarchy(newPath, depth + 1);
+        
+        const rowData = pivotTable.calculateRowValues(newPath);
+        const rowId = `row-${newPath.join('-')}`;
+        
+        return {
+          id: rowId,
+          content: value,
+          path: newPath,
+          depth,
+          children,
+          values: rowData,
+          isExpanded: expandedRows.has(rowId)
+        };
+      });
+    };
+
+    return buildRowHierarchy();
+  };
+
+  const toggleRowExpansion = (rowId) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(rowId)) {
+        next.delete(rowId);
+      } else {
+        next.add(rowId);
+      }
+      return next;
+    });
+  };
+
+  const renderRow = (row) => {
+    const cells = [
+      <td
+        key="header"
+        className="sticky left-0 bg-[#0B0B0F] group-hover:bg-gray-900/30 z-10 font-medium border-r border-gray-800 px-4 py-2 text-sm"
+      >
+        <div className="flex items-center">
+          <span style={{ marginLeft: `${row.depth * 1.5}rem` }} />
+          {row.children && (
+            <button
+              onClick={() => toggleRowExpansion(row.id)}
+              className="mr-2 p-1 hover:bg-gray-800 rounded-full"
+            >
+              {row.isExpanded ? (
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-gray-400" />
+              )}
+            </button>
+          )}
+          <span className="text-gray-400 group-hover:text-gray-300">
+            {row.content}
+          </span>
+        </div>
+      </td>
+    ];
+
+    // Add value cells
+    row.values.forEach((value, index) => {
+      cells.push(
+        <td
+          key={`value-${index}`}
+          className={`
+            px-4 py-2 text-sm text-right
+            ${value.isTotal ? 'bg-gray-900/50 font-medium' : ''}
+            ${value.isPositive ? 'text-green-400' : ''}
+            ${value.isNegative ? 'text-red-400' : ''}
+          `}
+        >
+          {value.content}
+        </td>
+      );
+    });
+
+    return cells;
+  };
+
+  const renderRows = (rows) => {
+    if (!rows) return null;
+
+    return rows.flatMap(row => {
+      const result = [
+        <tr key={row.id} className="group hover:bg-gray-900/30">
+          {renderRow(row)}
+        </tr>
+      ];
+
+      if (row.isExpanded && row.children) {
+        result.push(...renderRows(row.children));
+      }
+
+      return result;
+    });
   };
 
   return (
@@ -222,7 +337,6 @@ const PivotTableUI = ({ data, initialConfig }) => {
       {/* Table */}
       <div className="overflow-x-auto border border-gray-800 rounded-lg">
         <table className="min-w-full divide-y divide-gray-800">
-          {/* Headers */}
           <thead>
             {headers.map((headerRow, rowIndex) => (
               <tr key={rowIndex} className="bg-[#0B0B0F]">
@@ -248,51 +362,8 @@ const PivotTableUI = ({ data, initialConfig }) => {
               </tr>
             ))}
           </thead>
-
-          {/* Body */}
           <tbody className="divide-y divide-gray-800">
-            {rows.map((row, rowIndex) => (
-              <tr key={rowIndex} className="group hover:bg-gray-900/30">
-                {row.map((cell, cellIndex) => (
-                  <td
-                    key={cellIndex}
-                    className={`
-                      px-4 py-2 text-sm
-                      ${cell.isRowHeader ? 'sticky left-0 bg-[#0B0B0F] group-hover:bg-gray-900/30 z-10 font-medium border-r border-gray-800' : ''}
-                      ${cell.isNumber ? 'text-right' : ''}
-                      ${cell.isTotal ? 'bg-gray-900/50 font-medium' : ''}
-                      ${cell.isPositive ? 'text-green-400' : ''}
-                      ${cell.isNegative ? 'text-red-400' : ''}
-                    `}
-                  >
-                    <div className="flex items-center">
-                      {cell.isRowHeader && (
-                        <>
-                          {cell.indent > 0 && (
-                            <span style={{ marginLeft: `${cell.indent * 1.5}rem` }} />
-                          )}
-                          {cell.hasChildren && (
-                            <button
-                              onClick={() => toggleRowExpansion(`row-${rowIndex}`)}
-                              className="mr-2 p-1 hover:bg-gray-800 rounded-full"
-                            >
-                              {expandedRows.has(`row-${rowIndex}`) ? (
-                                <ChevronDown className="h-4 w-4 text-gray-400" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4 text-gray-400" />
-                              )}
-                            </button>
-                          )}
-                        </>
-                      )}
-                      <span className={cell.isRowHeader ? 'text-gray-400 group-hover:text-gray-300' : ''}>
-                        {cell.content}
-                      </span>
-                    </div>
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {renderRows(getHierarchicalRows())}
           </tbody>
         </table>
       </div>

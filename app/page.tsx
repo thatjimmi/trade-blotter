@@ -33,6 +33,12 @@ const Home = () => {
                                 { region: 'North',
                                     category: 'Electronics',
                                     product: 'Laptop', year: 2024, quarter: 'Q2', amount: 1200 },
+                                    { region: 'North',
+                                        category: 'Electronics',
+                                        product: 'iPhone', year: 2024, quarter: 'Q2', amount: 1200 },
+                                        { region: 'North',
+                                            category: 'Electronics',
+                                            product: 'iPhone', year: 2024, quarter: 'Q5', amount: 1200 }
                             ]} 
                                         initialConfig={{
                                         rowDimensions: ['category', 'region'],

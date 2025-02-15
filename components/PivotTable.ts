@@ -69,15 +69,6 @@ export class PivotTable {
     this.dimensions = Object.keys(data[0] || {});
   }
 
-  private filterData(): DataRow[] {
-    return this.data.filter((row) =>
-      Object.entries(this.config.filters).every(([dimension, selectedValues]) =>
-        selectedValues.length === 0
-          ? true
-          : selectedValues.includes(String(row[dimension]))
-      )
-    );
-  }
 
   private getColumnCombinations(config: TableConfig): string[][] {
     if (!config.colDimensions.length) return [];
@@ -341,5 +332,61 @@ export class PivotTable {
         .map((row) => String(row[dimension]))
         .filter(Boolean)
     )].sort();
+  }
+
+  public filterData(): DataRow[] {
+    return this.data.filter((row) =>
+      Object.entries(this.config.filters).every(([dimension, selectedValues]) =>
+        selectedValues.length === 0
+          ? true
+          : selectedValues.includes(String(row[dimension]))
+      )
+    );
+  }
+  
+  public calculateRowValues(rowPath: string[]): any[] {
+    const values: any[] = [];
+    const matchingRows = this.filterData().filter(row =>
+      rowPath.every((value, index) => 
+        String(row[this.config.rowDimensions[index]]) === value
+      )
+    );
+  
+    this.config.tableConfigs.forEach((config) => {
+      if (!config.colDimensions.length || !config.valueDimension) return;
+  
+      const combinations = this.getColumnCombinations(config);
+      combinations.forEach((combo) => {
+        const comboRows = matchingRows.filter(row =>
+          combo.every((value, index) =>
+            String(row[config.colDimensions[index]]) === value
+          )
+        );
+  
+        const value = comboRows.reduce(
+          (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
+          0
+        );
+  
+        values.push({
+          content: formatValue(value, config.formatType),
+          isNumber: true
+        });
+      });
+  
+      // Add row total
+      const total = matchingRows.reduce(
+        (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
+        0
+      );
+  
+      values.push({
+        content: formatValue(total, config.formatType),
+        isNumber: true,
+        isTotal: true
+      });
+    });
+  
+    return values;
   }
 }
