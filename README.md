@@ -1,6 +1,6 @@
 # Trade Blotter
 
-A modern trade blotter application built with Next and TypeScript.
+Trade blotter application built with Next and TypeScript.
 
 ## Features
 
