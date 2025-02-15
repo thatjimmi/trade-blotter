@@ -27,11 +27,15 @@ const Home = () => {
     <div className="flex flex-col gap-2 pb-3">
     <div className="flex flex-col w-4/5 mx-auto gap-2">
         <PivotTableUI data={[
-                                { category: 'Electronics', year: 2023, quarter: 'Q1', amount: 1000 },
-                                { category: 'Electronics', year: 2023, quarter: 'Q2', amount: 1200 },
+                                { region: 'North',
+                                    category: 'Electronics',
+                                    product: 'Laptop', year: 2023, quarter: 'Q1', amount: 1000 },
+                                { region: 'North',
+                                    category: 'Electronics',
+                                    product: 'Laptop', year: 2024, quarter: 'Q2', amount: 1200 },
                             ]} 
                                         initialConfig={{
-                                        rowDimensions: ['category'],
+                                        rowDimensions: ['category', 'region'],
                                         tableConfigs: [{
                                         id: 'sales',
                                         colDimensions: ['year', 'quarter'],
