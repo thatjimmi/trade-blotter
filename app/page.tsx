@@ -5,6 +5,7 @@ import StockAnalysis from "@/components/market-analysic";
 import StockMetrics from "@/components/metrics";
 import NavBar from "@/components/navbar";
 import NewsFeed from "@/components/newsfeed";
+import PivotTableUI from "@/components/pivottableui";
 import StockChart from "@/components/stockchart";
 import StockScreener from "@/components/stockscreener";
 import StockTable from "@/components/stocktable";
@@ -24,7 +25,22 @@ const Home = () => {
         </div>
     </div>
     <div className="flex flex-col gap-2 pb-3">
-
+    <div className="flex flex-col w-4/5 mx-auto gap-2">
+        <PivotTableUI data={[
+                                { category: 'Electronics', year: 2023, quarter: 'Q1', amount: 1000 },
+                                { category: 'Electronics', year: 2023, quarter: 'Q2', amount: 1200 },
+                            ]} 
+                                        initialConfig={{
+                                        rowDimensions: ['category'],
+                                        tableConfigs: [{
+                                        id: 'sales',
+                                        colDimensions: ['year', 'quarter'],
+                                        valueDimension: 'amount',
+                                        formatType: 'currency'
+                                        }],
+                                        filters: {}
+                                    }} />
+    </div>
     <div className="flex flex-col w-4/5 mx-auto gap-2">
         <StockTable />
         <NewsFeed />
