@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { PivotTable } from './PivotTable';
 
-// TableConfigPanel Component
 const TableConfigPanel = ({ 
   config, 
   index, 
@@ -60,6 +59,24 @@ const TableConfigPanel = ({
           <option value="eur">Currency (EUR)</option>
         </select>
       </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="block text-xs text-gray-400">Total Options</label>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={config.showColumnTotal}
+              onChange={(e) => onUpdate(config.id, { 
+                ...config, 
+                showColumnTotal: e.target.checked 
+              })}
+              className="rounded bg-gray-900 border-gray-700"
+            />
+            Show Column Total
+          </label>
+        </div>
+      </div>
     </div>
   </div>
 );
@@ -84,8 +101,15 @@ const MultiSelect = ({ options, value, onChange, placeholder }) => (
 const PivotTableUI = ({ data, initialConfig }) => {
   const [pivotTable, setPivotTable] = useState(null);
   const [expandedRows, setExpandedRows] = useState(new Set());
-  const [config, setConfig] = useState(initialConfig);
-  const [tableConfigs, setTableConfigs] = useState(initialConfig?.tableConfigs || []);
+  const [config, setConfig] = useState({
+    showRowTotal: true,
+    ...initialConfig,
+    tableConfigs: initialConfig?.tableConfigs.map(tc => ({
+      showColumnTotal: true,
+      ...tc,
+    })) || []
+  });
+  const [tableConfigs, setTableConfigs] = useState(config.tableConfigs);
 
   useEffect(() => {
     if (data && config) {
@@ -122,7 +146,8 @@ const PivotTableUI = ({ data, initialConfig }) => {
       id: newId,
       colDimensions: [],
       valueDimension: '',
-      formatType: 'number'
+      formatType: 'number',
+      showColumnTotal: true
     };
     setTableConfigs([...tableConfigs, newConfig]);
     setConfig(prev => ({
@@ -148,6 +173,13 @@ const PivotTableUI = ({ data, initialConfig }) => {
     setConfig(prev => ({
       ...prev,
       tableConfigs: updatedConfigs
+    }));
+  };
+
+  const handleRowTotalToggle = (checked) => {
+    setConfig(prev => ({
+      ...prev,
+      showRowTotal: checked
     }));
   };
 
@@ -249,22 +281,47 @@ const PivotTableUI = ({ data, initialConfig }) => {
     return cells;
   };
 
-  const renderRows = (rows) => {
+  const renderRows = (rows, isRootLevel = true) => {
     if (!rows) return null;
 
-    return rows.flatMap(row => {
-      const result = [
+    const result = rows.flatMap(row => {
+      const mainRow = [
         <tr key={row.id} className="group hover:bg-gray-900/30">
           {renderRow(row)}
         </tr>
       ];
 
       if (row.isExpanded && row.children) {
-        result.push(...renderRows(row.children));
+        // Pass false for nested levels to prevent multiple grand totals
+        mainRow.push(...renderRows(row.children, false));
       }
 
-      return result;
+      return mainRow;
     });
+
+    // Only add grand total row at the root level
+    if (isRootLevel && config.showRowTotal) {
+      result.push(
+        <tr key="grand-total" className="bg-gray-900/30 font-medium">
+          <td className="sticky left-0 bg-gray-900/30 z-10 px-4 py-2 text-sm border-r border-gray-800">
+            Total
+          </td>
+          {config.tableConfigs.flatMap(tableConfig => {
+            const values = pivotTable.calculateGrandTotalValues(tableConfig);
+            return values.map((value, idx) => (
+              <td
+                key={`total-${idx}`}
+                className="px-4 py-2 text-sm text-right font-medium"
+              >
+                {value.content}
+              </td>
+            ));
+          })}
+        </tr>
+      );
+    }
+
+    return result;
   };
 
   return (
@@ -311,6 +368,20 @@ const PivotTableUI = ({ data, initialConfig }) => {
               />
             ))}
           </div>
+        </div>
+
+        {/* Total Configuration */}
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-gray-400">Total Options</h3>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={config.showRowTotal}
+              onChange={(e) => handleRowTotalToggle(e.target.checked)}
+              className="rounded bg-gray-900 border-gray-700"
+            />
+            <span className="text-sm">Show Grand Total Row</span>
+          </label>
         </div>
 
         {/* Filters */}

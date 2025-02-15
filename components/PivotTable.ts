@@ -1,4 +1,3 @@
-// Types
 export type FormatType = "number" | "currency" | "percent" | "eur";
 
 export interface TableConfig {
@@ -6,6 +5,7 @@ export interface TableConfig {
   colDimensions: string[];
   valueDimension: string;
   formatType: FormatType;
+  showColumnTotal: boolean;
 }
 
 export interface DataRow {
@@ -16,9 +16,10 @@ export interface PivotTableConfig {
   rowDimensions: string[];
   tableConfigs: TableConfig[];
   filters: Record<string, string[]>;
+  showRowTotal: boolean;
 }
 
-// Utility functions
+// PivotTable.ts
 const getDimensionType = (data: DataRow[], dimension: string): "string" | "number" | "date" => {
   const sample = data[0]?.[dimension];
   if (!sample) return "string";
@@ -69,6 +70,15 @@ export class PivotTable {
     this.dimensions = Object.keys(data[0] || {});
   }
 
+  public filterData(): DataRow[] {
+    return this.data.filter((row) =>
+      Object.entries(this.config.filters).every(([dimension, selectedValues]) =>
+        selectedValues.length === 0
+          ? true
+          : selectedValues.includes(String(row[dimension]))
+      )
+    );
+  }
 
   private getColumnCombinations(config: TableConfig): string[][] {
     if (!config.colDimensions.length) return [];
@@ -148,13 +158,6 @@ export class PivotTable {
           }
         });
 
-        const getColspan = (path: string[]) => {
-          if (depth === config.colDimensions.length - 1) return 1;
-          return combinations.filter((combo) =>
-            path.every((value, i) => combo[i] === value)
-          ).length;
-        };
-
         [...headerGroups.values()]
           .sort((a, b) => {
             for (let i = 0; i <= depth; i++) {
@@ -164,16 +167,14 @@ export class PivotTable {
             return 0;
           })
           .forEach((path) => {
-            const value = path[depth];
-            const fullPath = path.slice(0, depth + 1);
             headers.push({
-              content: value,
-              path: fullPath,
-              colSpan: getColspan(fullPath)
+              content: path[depth],
+              path: path.slice(0, depth + 1),
+              colSpan: this.getColSpan(path.slice(0, depth + 1), combinations)
             });
           });
 
-        if (depth === 0) {
+        if (config.showColumnTotal && depth === 0) {
           headers.push({
             content: "Total",
             rowSpan: maxColDimensions,
@@ -186,132 +187,103 @@ export class PivotTable {
     });
   }
 
-  public getRows(): any[][] {
-    const filteredData = this.filterData();
-    const rows: any[][] = [];
+  private getColSpan(path: string[], combinations: string[][]): number {
+    if (path.length === combinations[0].length) return 1;
+    return combinations.filter(combo =>
+      path.every((value, i) => combo[i] === value)
+    ).length;
+  }
 
-    const processRow = (rowPath: string[], indent = 0): void => {
-      const rowValues = filteredData.filter((row) =>
-        rowPath.every(
-          (value, index) => String(row[this.config.rowDimensions[index]]) === value
-        )
-      );
+  public calculateRowValues(rowPath: string[]): any[] {
+    const values: any[] = [];
+    const matchingRows = this.filterData().filter(row =>
+      rowPath.every((value, index) => 
+        String(row[this.config.rowDimensions[index]]) === value
+      )
+    );
 
-      const row = [];
-      row.push({
-        content: rowPath[rowPath.length - 1],
-        indent,
-        isRowHeader: true
-      });
+    this.config.tableConfigs.forEach((config) => {
+      if (!config.colDimensions.length || !config.valueDimension) return;
 
-      this.config.tableConfigs.forEach((config) => {
-        if (!config.colDimensions.length || !config.valueDimension) return;
+      const combinations = this.getColumnCombinations(config);
+      combinations.forEach((combo) => {
+        const comboRows = matchingRows.filter(row =>
+          combo.every((value, index) =>
+            String(row[config.colDimensions[index]]) === value
+          )
+        );
 
-        const combinations = this.getColumnCombinations(config);
-        combinations.forEach((combo) => {
-          const matchingRows = rowValues.filter((row) =>
-            combo.every(
-              (value, index) =>
-                String(row[config.colDimensions[index]]) === value
-            )
-          );
+        const value = comboRows.reduce(
+          (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
+          0
+        );
 
-          const value = matchingRows.reduce(
-            (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
-            0
-          );
-
-          row.push({
-            content: formatValue(value, config.formatType),
-            isNumber: true
-          });
-        });
-
-        // Add row total
-        row.push({
-          content: formatValue(
-            rowValues.reduce(
-              (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
-              0
-            ),
-            config.formatType
-          ),
-          isTotal: true
+        values.push({
+          content: formatValue(value, config.formatType),
+          isNumber: true
         });
       });
 
-      rows.push(row);
-    };
+      if (config.showColumnTotal) {
+        const total = matchingRows.reduce(
+          (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
+          0
+        );
 
-    // Process all root level rows
-    const rootValues = [...new Set(
-      filteredData
-        .map((row) => String(row[this.config.rowDimensions[0]]))
-        .filter(Boolean)
-    )].sort((a, b) => {
-      const type = getDimensionType(filteredData, this.config.rowDimensions[0]);
-      if (type === "date") {
-        return new Date(String(a)).getTime() - new Date(String(b)).getTime();
-      }
-      if (type === "number") {
-        return parseFloat(String(a)) - parseFloat(String(b));
-      }
-      return String(a).localeCompare(String(b));
-    });
-
-    rootValues.forEach((value) => processRow([String(value)]));
-
-    // Add grand total row
-    if (this.config.rowDimensions.length > 0) {
-      const totalRow = [];
-      totalRow.push({
-        content: "Total",
-        isRowHeader: true,
-        isTotal: true
-      });
-
-      this.config.tableConfigs.forEach((config) => {
-        if (!config.colDimensions.length || !config.valueDimension) return;
-
-        const combinations = this.getColumnCombinations(config);
-        combinations.forEach((combo) => {
-          const matchingRows = filteredData.filter((row) =>
-            combo.every(
-              (value, index) =>
-                String(row[config.colDimensions[index]]) === value
-            )
-          );
-
-          const total = matchingRows.reduce(
-            (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
-            0
-          );
-
-          totalRow.push({
-            content: formatValue(total, config.formatType),
-            isNumber: true,
-            isTotal: true
-          });
-        });
-
-        // Add grand total
-        totalRow.push({
-          content: formatValue(
-            filteredData.reduce(
-              (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
-              0
-            ),
-            config.formatType
-          ),
+        values.push({
+          content: formatValue(total, config.formatType),
           isNumber: true,
           isTotal: true
         });
-      });
+      }
+    });
 
-      rows.push(totalRow);
+    return values;
+  }
+
+  public calculateGrandTotalValues(tableConfig: TableConfig): any[] {
+    const values: any[] = [];
+    const filteredData = this.filterData();
+
+    if (!tableConfig.colDimensions.length || !tableConfig.valueDimension) {
+      return values;
     }
 
-    return rows;
+    const combinations = this.getColumnCombinations(tableConfig);
+    
+    combinations.forEach((combo) => {
+      const matchingRows = filteredData.filter(row =>
+        combo.every((value, index) =>
+          String(row[tableConfig.colDimensions[index]]) === value
+        )
+      );
+
+      const total = matchingRows.reduce(
+        (sum, row) => sum + (parseFloat(String(row[tableConfig.valueDimension])) || 0),
+        0
+      );
+
+      values.push({
+        content: formatValue(total, tableConfig.formatType),
+        isNumber: true,
+        isTotal: true
+      });
+    });
+
+    if (tableConfig.showColumnTotal) {
+      const grandTotal = filteredData.reduce(
+        (sum, row) => sum + (parseFloat(String(row[tableConfig.valueDimension])) || 0),
+        0
+      );
+
+      values.push({
+        content: formatValue(grandTotal, tableConfig.formatType),
+        isNumber: true,
+        isTotal: true
+      });
+    }
+
+    return values;
   }
 
   public getDimensions(): string[] {
@@ -332,61 +304,5 @@ export class PivotTable {
         .map((row) => String(row[dimension]))
         .filter(Boolean)
     )].sort();
-  }
-
-  public filterData(): DataRow[] {
-    return this.data.filter((row) =>
-      Object.entries(this.config.filters).every(([dimension, selectedValues]) =>
-        selectedValues.length === 0
-          ? true
-          : selectedValues.includes(String(row[dimension]))
-      )
-    );
-  }
-  
-  public calculateRowValues(rowPath: string[]): any[] {
-    const values: any[] = [];
-    const matchingRows = this.filterData().filter(row =>
-      rowPath.every((value, index) => 
-        String(row[this.config.rowDimensions[index]]) === value
-      )
-    );
-  
-    this.config.tableConfigs.forEach((config) => {
-      if (!config.colDimensions.length || !config.valueDimension) return;
-  
-      const combinations = this.getColumnCombinations(config);
-      combinations.forEach((combo) => {
-        const comboRows = matchingRows.filter(row =>
-          combo.every((value, index) =>
-            String(row[config.colDimensions[index]]) === value
-          )
-        );
-  
-        const value = comboRows.reduce(
-          (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
-          0
-        );
-  
-        values.push({
-          content: formatValue(value, config.formatType),
-          isNumber: true
-        });
-      });
-  
-      // Add row total
-      const total = matchingRows.reduce(
-        (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
-        0
-      );
-  
-      values.push({
-        content: formatValue(total, config.formatType),
-        isNumber: true,
-        isTotal: true
-      });
-    });
-  
-    return values;
   }
 }
