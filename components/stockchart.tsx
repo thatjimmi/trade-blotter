@@ -41,6 +41,7 @@ const StockChart = () => {
   const afterHoursPercentChange = +0.11;
 
   const CustomTooltip = ({ active, payload }) => {
+    console.log(active, payload)
     if (active && payload && payload.length) {
       const currentValue = payload[0].value;
       const startPrice = data[0].price;

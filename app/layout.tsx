@@ -1,8 +1,10 @@
-import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import localFont from 'next/font/local';
 
-
+const cabinetGrotesk = localFont({
+  src: '../public/fonts/CabinetGrotesk-Regular.woff',
+  variable: '--font-cabinet'
+});
 
 export default function RootLayout({
   children,
@@ -12,7 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        // className={`${spaceGrotesk.variable} ${spaceGrotesk.variable} antialiased`}
+        className={cabinetGrotesk.variable}
       >
         {children}
       </body>

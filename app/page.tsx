@@ -12,7 +12,7 @@ import TradeBlotter from "@/components/tradeblotter";
 
 const Home = () => {
     return(
-        <div style={{fontFamily: 'Cabinet Grotesk'}}>
+    
 
         <>
     <div className="flex items-center h-screen" >
@@ -39,7 +39,7 @@ const Home = () => {
     </div>
     </div>
         </>
-        </div>
+        
     )
 }
 
