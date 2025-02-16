@@ -135,6 +135,8 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
     }
   }, [data, config]);
 
+  console.log(pivotTable);
+
   if (!pivotTable) return null;
 
   const dimensions = pivotTable.getDimensions();
