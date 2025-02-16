@@ -120,6 +120,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
   const [showConfig, setShowConfig] = useState(configureable);
   const [config, setConfig] = useState({
     showRowTotal: true,
+    expandedByDefault: false,
     ...initialConfig,
     tableConfigs:
       initialConfig?.tableConfigs.map((tc) => ({
@@ -135,7 +136,17 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
     }
   }, [data, config]);
 
-  console.log(pivotTable);
+  useEffect(() => {
+    if (pivotTable) {
+      // If expandedByDefault is true, expand all rows initially
+      if (config.expandedByDefault) {
+        const allRows = getAllRowIds(getHierarchicalRows());
+        setExpandedRows(new Set(allRows));
+      } else {
+        setExpandedRows(new Set());
+      }
+    }
+  }, [config.expandedByDefault, pivotTable]);
 
   if (!pivotTable) return null;
 
@@ -208,6 +219,25 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
       ...prev,
       showRowTotal: checked,
     }));
+  };
+
+  const handleExpandedByDefaultToggle = (checked) => {
+    setConfig((prev) => ({
+      ...prev,
+      expandedByDefault: checked,
+    }));
+  };
+
+  // Helper function to get all row IDs
+  const getAllRowIds = (rows) => {
+    if (!rows) return [];
+    return rows.flatMap((row) => {
+      const ids = [row.id];
+      if (row.children) {
+        ids.push(...getAllRowIds(row.children));
+      }
+      return ids;
+    });
   };
 
   // Get hierarchical rows data
@@ -413,15 +443,28 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
           {/* Total Configuration */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-gray-400">Total Options</h3>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={config.showRowTotal}
-                onChange={(e) => handleRowTotalToggle(e.target.checked)}
-                className="rounded bg-gray-900 border-gray-700"
-              />
-              <span className="text-sm">Show Grand Total Row</span>
-            </label>
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={config.showRowTotal}
+                  onChange={(e) => handleRowTotalToggle(e.target.checked)}
+                  className="rounded bg-gray-900 border-gray-700"
+                />
+                <span className="text-sm">Show Grand Total Row</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={config.expandedByDefault}
+                  onChange={(e) =>
+                    handleExpandedByDefaultToggle(e.target.checked)
+                  }
+                  className="rounded bg-gray-900 border-gray-700"
+                />
+                <span className="text-sm">Expand All Rows by Default</span>
+              </label>
+            </div>
           </div>
 
           {/* Filters */}

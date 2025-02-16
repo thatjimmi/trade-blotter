@@ -30,7 +30,7 @@ const Home = () => {
                 region: "Americas",
                 sector: "Technology",
                 symbol: "AAPL",
-                year: 2023,
+                year: 2024,
                 quarter: "Q4",
                 volume: 1250000,
                 price: 185.75,
@@ -79,6 +79,7 @@ const Home = () => {
             ]}
             initialConfig={{
               showRowTotal: true,
+              expandedByDefault: false,
               rowDimensions: ["region", "sector"],
               tableConfigs: [
                 {
