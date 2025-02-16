@@ -5,7 +5,7 @@ import StockAnalysis from "@/components/market-analysic";
 import StockMetrics from "@/components/metrics";
 import NavBar from "@/components/navbar";
 import NewsFeed from "@/components/newsfeed";
-import PivotTableUI from "@/components/PivotTableUI";
+import PivotTableUI from "@/components/pivottableui";
 import StockChart from "@/components/stockchart";
 import StockScreener from "@/components/stockscreener";
 import StockTable from "@/components/stocktable";

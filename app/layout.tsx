@@ -28,7 +28,7 @@ const cabinetGrotesk = localFont({
       weight: "700",
     },
     {
-      path: "../public/fonts/CabinetGrotesk-ExtraBold.woff",
+      path: "../public/fonts/CabinetGrotesk-Extrabold.woff",
       weight: "800",
     },
     {
