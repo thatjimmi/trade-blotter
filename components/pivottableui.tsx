@@ -324,7 +324,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
         <td
           key={`value-${index}`}
           className={`
-            px-4 py-2 text-sm text-right
+            px-4 py-2 text-sm text-right border-l border-gray-800
             ${value.isTotal ? "bg-gray-900/50 font-medium" : ""}
             ${value.isPositive ? "text-green-400" : ""}
             ${value.isNegative ? "text-red-400" : ""}
@@ -368,7 +368,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
             return values.map((value, idx) => (
               <td
                 key={`total-${idx}`}
-                className="px-4 py-2 text-sm text-right font-medium"
+                className="px-4 py-2 text-sm text-right font-medium border-l border-gray-800"
               >
                 {value.content}
               </td>
@@ -382,7 +382,11 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
   };
 
   return (
-    <div className="w-full space-y-6 bg-[#0B0B0F] text-gray-300 p-6 rounded-xl border border-slate-800">
+    <div
+      className={`w-full space-y-6 bg-[#0B0B0F] text-gray-300 ${
+        configureable && "p-6"
+      } rounded-xl border border-slate-800`}
+    >
       {/* Toggle Configuration Button */}
       {configureable && (
         <button
@@ -510,10 +514,10 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
                     rowSpan={header.rowSpan}
                     colSpan={header.colSpan}
                     className={`
-                      px-4 py-2 text-left text-sm font-medium text-gray-400
+                      px-4 py-2 text-left text-sm font-medium text-gray-400 border border-r-0 border-t-0 border-gray-800
                       ${
                         header.isRowHeader
-                          ? "sticky left-0 bg-[#0B0B0F] z-10 border-r border-gray-800"
+                          ? "sticky left-0 bg-[#0B0B0F] z-10 border-r border-gray-800 border-l-0"
                           : ""
                       }
                       ${header.isTotal ? "bg-gray-900" : ""}

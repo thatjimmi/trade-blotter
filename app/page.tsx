@@ -76,6 +76,16 @@ const Home = () => {
                 price: 2524.5,
                 amount: 2246805000,
               },
+              {
+                region: "Europe",
+                sector: "Energy",
+                symbol: "SHEL.L",
+                year: 2023,
+                quarter: "Q3",
+                volume: 890000,
+                price: 2524.5,
+                amount: 2246805000,
+              },
             ]}
             initialConfig={{
               showRowTotal: true,
