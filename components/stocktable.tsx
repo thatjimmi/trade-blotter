@@ -1,60 +1,60 @@
-import React from 'react';
+import React from "react";
 
 const stocks = [
   {
-    symbol: 'NVDA',
-    name: 'NVIDIA Corp',
-    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
-    currency: 'USD',
-    exchange: 'Nasdaq',
+    symbol: "NVDA",
+    name: "NVIDIA Corp",
+    logo: " ",
+    currency: "USD",
+    exchange: "Nasdaq",
     growth: 0.2241,
   },
   {
-    symbol: 'MSFT',
-    name: 'Microsoft Corp',
-    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
-    currency: 'USD',
-    exchange: 'Nasdaq',
+    symbol: "MSFT",
+    name: "Microsoft Corp",
+    logo: " ",
+    currency: "USD",
+    exchange: "Nasdaq",
     growth: 17.968,
   },
   {
-    symbol: 'AAPL',
-    name: 'Apple Inc.',
-    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
-    currency: 'USD',
-    exchange: 'Nasdaq',
+    symbol: "AAPL",
+    name: "Apple Inc.",
+    logo: " ",
+    currency: "USD",
+    exchange: "Nasdaq",
     growth: 7.7912,
   },
   {
-    symbol: 'TSLA',
-    name: 'Tesla Inc.',
-    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
-    currency: 'USD',
-    exchange: 'Nasdaq',
+    symbol: "TSLA",
+    name: "Tesla Inc.",
+    logo: " ",
+    currency: "USD",
+    exchange: "Nasdaq",
     growth: -51.836,
   },
   {
-    symbol: 'AMZN',
-    name: 'Amazon.com Inc',
-    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
-    currency: 'USD',
-    exchange: 'Nasdaq',
+    symbol: "AMZN",
+    name: "Amazon.com Inc",
+    logo: " ",
+    currency: "USD",
+    exchange: "Nasdaq",
     growth: 12.345,
   },
   {
-    symbol: 'QQQ',
-    name: 'Invesco QQQ',
-    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
-    currency: 'USD',
-    exchange: 'Nasdaq',
+    symbol: "QQQ",
+    name: "Invesco QQQ",
+    logo: " ",
+    currency: "USD",
+    exchange: "Nasdaq",
     growth: 8.765,
   },
   {
-    symbol: 'F',
-    name: 'Ford Motor Co.',
-    logo: 'https://via.assets.so/img.jpg?w=150&h=150&tc=blue&bg=#cecece',
-    currency: 'USD',
-    exchange: 'NYSE',
+    symbol: "F",
+    name: "Ford Motor Co.",
+    logo: " ",
+    currency: "USD",
+    exchange: "NYSE",
     growth: -3.421,
   },
 ];
@@ -73,7 +73,7 @@ const StockTable = () => {
       {/* Table Body */}
       <div className="divide-y divide-gray-800">
         {stocks.map((stock) => (
-          <div 
+          <div
             key={stock.symbol}
             className="grid grid-cols-4 px-4 py-4 hover:bg-gray-800/50 transition-colors"
           >
@@ -103,8 +103,13 @@ const StockTable = () => {
             </div>
 
             {/* Growth Column */}
-            <div className={`flex items-center ${stock.growth >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {stock.growth >= 0 ? '+' : ''}{stock.growth.toFixed(2)}%
+            <div
+              className={`flex items-center ${
+                stock.growth >= 0 ? "text-green-500" : "text-red-500"
+              }`}
+            >
+              {stock.growth >= 0 ? "+" : ""}
+              {stock.growth.toFixed(2)}%
             </div>
           </div>
         ))}

@@ -1,3 +1,5 @@
+import { PivotWorkerService } from '../services/PivotWorkerService';
+
 export type FormatType = "number" | "currency" | "percent" | "eur";
 
 export interface TableConfig {
@@ -63,27 +65,48 @@ export class PivotTable {
   private data: DataRow[];
   private config: PivotTableConfig;
   private dimensions: string[];
+  private workerService: PivotWorkerService;
+  private isInitialized: boolean = false;
 
   constructor(data: DataRow[], config: PivotTableConfig) {
     this.data = data;
     this.config = config;
     this.dimensions = Object.keys(data[0] || {});
+    this.workerService = new PivotWorkerService();
   }
 
-  public filterData(): DataRow[] {
-    return this.data.filter((row) =>
-      Object.entries(this.config.filters).every(([dimension, selectedValues]) =>
-        selectedValues.length === 0
-          ? true
-          : selectedValues.includes(String(row[dimension]))
-      )
-    );
+  private async initializeWorker() {
+    if (this.isInitialized) return;
+    
+    try {
+      console.log('Initializing PivotTable worker...');
+      await this.workerService.initialize();
+      console.log('Loading data into worker...');
+      await this.workerService.loadData(this.data);
+      console.log('Worker initialization complete');
+      this.isInitialized = true;
+    } catch (error) {
+      console.error('Failed to initialize worker:', error);
+      throw error;
+    }
   }
 
-  private getColumnCombinations(config: TableConfig): string[][] {
+  private async ensureInitialized() {
+    if (!this.isInitialized) {
+      await this.initializeWorker();
+    }
+  }
+
+  public async filterData(): Promise<DataRow[]> {
+    await this.ensureInitialized();
+    return this.workerService.queryData(this.config.filters, this.dimensions);
+  }
+
+  private async getColumnCombinations(config: TableConfig): Promise<string[][]> {
+    await this.ensureInitialized();
     if (!config.colDimensions.length) return [];
 
-    const filteredData = this.filterData();
+    const filteredData = await this.filterData();
     const combinations: string[][] = [];
 
     const firstDimValues = [...new Set(
@@ -92,7 +115,7 @@ export class PivotTable {
         .filter(Boolean)
     )].sort();
 
-    const buildCombinations = (currentCombo: string[], depth: number) => {
+    const buildCombinations = async (currentCombo: string[], depth: number) => {
       if (depth === config.colDimensions.length) {
         combinations.push(currentCombo);
         return;
@@ -111,19 +134,20 @@ export class PivotTable {
       )].sort();
 
       for (const value of validValues) {
-        buildCombinations([...currentCombo, value], depth + 1);
+        await buildCombinations([...currentCombo, value], depth + 1);
       }
     };
 
     for (const value of firstDimValues) {
-      buildCombinations([value], 1);
+      await buildCombinations([value], 1);
     }
 
     return combinations;
   }
 
-  public getHeaders(): any[][] {
-    const filteredData = this.filterData();
+  public async getHeaders(): Promise<any[][]> {
+    await this.ensureInitialized();
+    const filteredData = await this.filterData();
     const activeConfigs = this.config.tableConfigs.filter(
       (config) => config.colDimensions.length && config.valueDimension
     );
@@ -134,7 +158,7 @@ export class PivotTable {
       ...activeConfigs.map((config) => config.colDimensions.length)
     );
 
-    return Array(maxColDimensions).fill(0).map((_, depth) => {
+    const headerRows = await Promise.all(Array(maxColDimensions).fill(0).map(async (_, depth) => {
       const headers = [];
       
       if (depth === 0) {
@@ -145,10 +169,10 @@ export class PivotTable {
         });
       }
 
-      activeConfigs.forEach((config) => {
-        if (depth >= config.colDimensions.length) return;
+      for (const config of activeConfigs) {
+        if (depth >= config.colDimensions.length) continue;
 
-        const combinations = this.getColumnCombinations(config);
+        const combinations = await this.getColumnCombinations(config);
         const headerGroups = new Map();
         
         combinations.forEach((combo) => {
@@ -181,101 +205,81 @@ export class PivotTable {
             isTotal: true
           });
         }
-      });
+      }
 
       return headers;
-    });
+    }));
+
+    return headerRows;
   }
 
-  private getColSpan(path: string[], combinations: string[][]): number {
-    if (path.length === combinations[0].length) return 1;
-    return combinations.filter(combo =>
-      path.every((value, i) => combo[i] === value)
-    ).length;
-  }
-
-  public calculateRowValues(rowPath: string[]): any[] {
+  public async calculateRowValues(rowPath: string[]): Promise<any[]> {
+    await this.ensureInitialized();
     const values: any[] = [];
-    const matchingRows = this.filterData().filter(row =>
-      rowPath.every((value, index) => 
-        String(row[this.config.rowDimensions[index]]) === value
-      )
-    );
 
-    this.config.tableConfigs.forEach((config) => {
-      if (!config.colDimensions.length || !config.valueDimension) return;
+    for (const config of this.config.tableConfigs) {
+      if (!config.colDimensions.length || !config.valueDimension) continue;
 
-      const combinations = this.getColumnCombinations(config);
+      const calculatedValues = await this.workerService.calculateValues(
+        rowPath,
+        this.config.rowDimensions,
+        config
+      );
+
+      const combinations = await this.getColumnCombinations(config);
       combinations.forEach((combo) => {
-        const comboRows = matchingRows.filter(row =>
-          combo.every((value, index) =>
-            String(row[config.colDimensions[index]]) === value
-          )
-        );
-
-        const value = comboRows.reduce(
-          (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
-          0
+        const matchingValue = calculatedValues.find(v => 
+          v.dimensions.every((dim, i) => dim === combo[i])
         );
 
         values.push({
-          content: formatValue(value, config.formatType),
+          content: formatValue(matchingValue?.value || 0, config.formatType),
           isNumber: true
         });
       });
 
       if (config.showColumnTotal) {
-        const total = matchingRows.reduce(
-          (sum, row) => sum + (parseFloat(String(row[config.valueDimension])) || 0),
-          0
-        );
-
+        const total = calculatedValues.reduce((sum, v) => sum + (v.value || 0), 0);
         values.push({
           content: formatValue(total, config.formatType),
           isNumber: true,
           isTotal: true
         });
       }
-    });
+    }
 
     return values;
   }
 
-  public calculateGrandTotalValues(tableConfig: TableConfig): any[] {
+  public async calculateGrandTotalValues(tableConfig: TableConfig): Promise<any[]> {
+    await this.ensureInitialized();
     const values: any[] = [];
-    const filteredData = this.filterData();
 
     if (!tableConfig.colDimensions.length || !tableConfig.valueDimension) {
       return values;
     }
 
-    const combinations = this.getColumnCombinations(tableConfig);
-    
-    combinations.forEach((combo) => {
-      const matchingRows = filteredData.filter(row =>
-        combo.every((value, index) =>
-          String(row[tableConfig.colDimensions[index]]) === value
-        )
-      );
+    const calculatedValues = await this.workerService.calculateValues(
+      [],
+      this.config.rowDimensions,
+      tableConfig
+    );
 
-      const total = matchingRows.reduce(
-        (sum, row) => sum + (parseFloat(String(row[tableConfig.valueDimension])) || 0),
-        0
+    const combinations = await this.getColumnCombinations(tableConfig);
+    combinations.forEach((combo) => {
+      const matchingValue = calculatedValues.find(v => 
+        v.dimensions.every((dim, i) => dim === combo[i])
       );
 
       values.push({
-        content: formatValue(total, tableConfig.formatType),
+        content: formatValue(matchingValue?.value || 0, tableConfig.formatType),
         isNumber: true,
         isTotal: true
       });
     });
 
     if (tableConfig.showColumnTotal) {
-      const grandTotal = filteredData.reduce(
-        (sum, row) => sum + (parseFloat(String(row[tableConfig.valueDimension])) || 0),
-        0
-      );
-
+      const grandTotal = calculatedValues.reduce((sum, v) => sum + (v.value || 0), 0);
       values.push({
         content: formatValue(grandTotal, tableConfig.formatType),
         isNumber: true,
@@ -286,23 +290,68 @@ export class PivotTable {
     return values;
   }
 
-  public getDimensions(): string[] {
-    return this.dimensions;
-  }
-
-  public getNumericDimensions(): string[] {
+  public async getNumericDimensions(): Promise<string[]> {
+    await this.ensureInitialized();
+    const filteredData = await this.filterData();
     return this.dimensions.filter(
       (dim) =>
-        !isNaN(parseFloat(String(this.data[0][dim]))) &&
-        isFinite(Number(this.data[0][dim]))
+        !isNaN(parseFloat(String(filteredData[0]?.[dim]))) &&
+        isFinite(Number(filteredData[0]?.[dim]))
     );
   }
 
-  public getDimensionValues(dimension: string): string[] {
-    return [...new Set(
-      this.data
-        .map((row) => String(row[dimension]))
-        .filter(Boolean)
-    )].sort();
+  public async getDimensionValues(dimension: string): Promise<string[]> {
+    await this.ensureInitialized();
+    return this.workerService.getDimensionValues(dimension);
+  }
+
+  // Helper method to calculate column span for headers
+  private getColSpan(path: string[], combinations: string[][]): number {
+    return combinations.filter(combo =>
+      path.every((value, index) => combo[index] === value)
+    ).length;
+  }
+
+  public async getHierarchicalRows(): Promise<any[]> {
+    await this.ensureInitialized();
+    const filteredData = await this.filterData();
+    const { rowDimensions } = this.config;
+
+    const buildRowHierarchy = async (path: string[] = [], depth: number = 0): Promise<any[] | null> => {
+      if (depth >= rowDimensions.length) return null;
+
+      const currentDimension = rowDimensions[depth];
+      const matchingRows = filteredData.filter((row) =>
+        path.every((value, i) => String(row[rowDimensions[i]]) === value)
+      );
+
+      const dimensionValues = [...new Set(
+        matchingRows.map((row) => String(row[currentDimension]))
+      )].sort();
+
+      const rows = await Promise.all(
+        dimensionValues.map(async (value) => {
+          const newPath = [...path, value];
+          const children = await buildRowHierarchy(newPath, depth + 1);
+          const rowValues = await this.calculateRowValues(newPath);
+          const rowId = `row-${newPath.join("-")}`;
+
+          return {
+            id: rowId,
+            content: value,
+            path: newPath,
+            depth,
+            children: children || undefined,
+            values: rowValues,
+            isExpanded: false
+          };
+        })
+      );
+
+      return rows;
+    };
+
+    const result = await buildRowHierarchy();
+    return result || [];
   }
 }

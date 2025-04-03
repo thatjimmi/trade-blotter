@@ -87,16 +87,16 @@ const Home = () => {
                 amount: 2246805000,
               },
             ]}
-            initialConfig={{
+            config={{
               showRowTotal: true,
-              expandedByDefault: false,
               rowDimensions: ["region", "sector"],
               tableConfigs: [
                 {
+                  id: "asdsadsa",
                   colDimensions: ["year", "quarter"],
                   valueDimension: "amount",
                   formatType: "currency",
-                  showColumnTotal: !true,
+                  showColumnTotal: true,
                 },
               ],
               filters: {},

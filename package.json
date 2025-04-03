@@ -1,29 +1,33 @@
 {
-  "name": "coming-soon-project",
-  "version": "0.1.0",
+  "name": "pivot-table-app",
+  "version": "1.0.0",
   "private": true,
+  "dependencies": {
+    "@jlongster/sql.js": "^1.6.7",
+    "absurd-sql": "^0.0.46",
+    "lucide-react": "^0.363.0",
+    "next": "15.1.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "recharts": "^2.15.1",
+    "typescript": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.14",
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "worker-loader": "^3.0.8"
+  },
   "scripts": {
-    "dev": "next dev --turbopack",
+    "copy-wasm": "node scripts/copy-wasm.js",
+    "predev": "npm run copy-wasm",
+    "prebuild": "npm run copy-wasm",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
-  },
-  "dependencies": {
-    "lucide-react": "^0.475.0",
-    "next": "15.1.6",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "recharts": "^2.15.1"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.1.6",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
   }
 }
