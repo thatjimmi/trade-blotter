@@ -123,8 +123,30 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         // Insert new data in batches
         const batchSize = 1000;
         const data = payload.data as Record<string, any>[];
-        for (let i = 0; i < data.length; i += batchSize) {
-          const batch = data.slice(i, i + batchSize);
+
+        // Process data before insertion to ensure numeric values are properly formatted
+        const processedData = data.map(row => {
+          const processed = { ...row };
+          Object.entries(row).forEach(([key, value]) => {
+            if (typeof value === 'number') {
+              processed[key] = value;
+            } else if (typeof value === 'string' && value.trim().startsWith('$')) {
+              // Handle currency strings
+              const numericValue = parseFloat(value.replace(/[$,]/g, ''));
+              processed[key] = isNaN(numericValue) ? 0 : numericValue;
+            } else if (typeof value === 'string' && !isNaN(Number(value.replace(/,/g, '')))) {
+              // Handle numeric strings
+              const numericValue = parseFloat(value.replace(/,/g, ''));
+              processed[key] = isNaN(numericValue) ? 0 : numericValue;
+            }
+          });
+          return processed;
+        });
+
+        console.log('Sample processed row:', processedData[0]);
+
+        for (let i = 0; i < processedData.length; i += batchSize) {
+          const batch = processedData.slice(i, i + batchSize);
           const stmt = db.prepare('INSERT INTO pivot_data (row_data) VALUES (?)');
           
           batch.forEach(row => {
@@ -196,10 +218,12 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         try {
           const { rowPath, rowDimensions, tableConfig } = payload;
           
+          // Build the row path conditions
           let whereClause = rowPath.map((value: string, index: number) => 
             `json_extract(row_data, '$.${rowDimensions[index]}') = '${value}'`
           ).join(' AND ');
 
+          // Add column dimension conditions
           if (tableConfig.colDimensions.length > 0) {
             const colDimConditions = tableConfig.colDimensions.map((dim: string) => 
               `json_extract(row_data, '$.${dim}') IS NOT NULL`
@@ -207,30 +231,65 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
             whereClause = whereClause ? `${whereClause} AND ${colDimConditions}` : colDimConditions;
           }
 
+          // Add value dimension condition
+          if (whereClause) {
+            whereClause += ` AND json_extract(row_data, '$.${tableConfig.valueDimension}') IS NOT NULL`;
+          } else {
+            whereClause = `WHERE json_extract(row_data, '$.${tableConfig.valueDimension}') IS NOT NULL`;
+          }
+
           const query = `
+            WITH parsed_data AS (
+              SELECT DISTINCT
+                ${tableConfig.colDimensions.map((dim: string) => 
+                  `json_extract(row_data, '$.${dim}') as ${dim}`
+                ).join(', ')},
+                CAST(
+                  CASE 
+                    WHEN json_type(row_data, '$.${tableConfig.valueDimension}') = 'text' 
+                      AND json_extract(row_data, '$.${tableConfig.valueDimension}') LIKE '$%'
+                    THEN REPLACE(REPLACE(json_extract(row_data, '$.${tableConfig.valueDimension}'), '$', ''), ',', '')
+                    WHEN json_type(row_data, '$.${tableConfig.valueDimension}') = 'text'
+                    THEN REPLACE(json_extract(row_data, '$.${tableConfig.valueDimension}'), ',', '')
+                    ELSE json_extract(row_data, '$.${tableConfig.valueDimension}')
+                  END AS DECIMAL(20, 2)
+                ) as numeric_value
+              FROM pivot_data
+              ${whereClause ? `WHERE ${whereClause}` : ''}
+            )
             SELECT 
-              ${tableConfig.colDimensions.map((dim: string) => 
-                `json_extract(row_data, '$.${dim}') as ${dim}`
-              ).join(', ')},
-              SUM(CAST(json_extract(row_data, '$.${tableConfig.valueDimension}') AS FLOAT)) as value
-            FROM pivot_data
-            ${whereClause ? `WHERE ${whereClause}` : ''}
-            GROUP BY ${tableConfig.colDimensions.map((dim: string) => 
-              `json_extract(row_data, '$.${dim}')`)
-            .join(', ')}
+              ${tableConfig.colDimensions.map((dim: string) => dim).join(', ')}
+              ${tableConfig.colDimensions.length ? ',' : ''}
+              SUM(numeric_value) as value
+            FROM parsed_data
+            ${tableConfig.colDimensions.length ? 
+              `GROUP BY ${tableConfig.colDimensions.map((dim: string) => dim).join(', ')}` : 
+              ''
+            }
           `;
 
+          console.log('Executing query:', query);
+
           const results = db.exec(query);
-          const values = results[0]?.values?.map(row => ({
-            dimensions: row.slice(0, -1),
-            value: row[row.length - 1]
-          })) || [];
+          console.log('Query results:', results);
+
+          const values = results[0]?.values?.map(row => {
+            const value = parseFloat(row[row.length - 1]);
+            console.log('Parsed value:', value);
+            return {
+              dimensions: row.slice(0, -1),
+              value: isNaN(value) ? 0 : value
+            };
+          }) || [];
+
+          console.log('Processed values:', values);
 
           self.postMessage({ 
             type: 'calculate_values_complete',
             values
           });
         } catch (error) {
+          console.error('Error in calculate_values:', error);
           self.postMessage({ type: 'error', error: (error as Error).message });
         }
         break;

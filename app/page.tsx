@@ -11,6 +11,69 @@ import StockScreener from "@/components/stockscreener";
 import StockTable from "@/components/stocktable";
 import TradeBlotter from "@/components/tradeblotter";
 
+const generateRandomData = (count: number) => {
+  const categories = [
+    "Large Cap",
+    "Mid Cap",
+    "Small Cap",
+    "Growth",
+    "Value",
+    "Dividend",
+    "Momentum",
+    "Volatility",
+  ];
+
+  const regions = [
+    "Americas",
+    "Europe",
+    "Asia",
+    "Africa",
+    "Australia",
+    "Greenland",
+  ];
+  const sectors = [
+    "Technology",
+    "Finance",
+    "Healthcare",
+    "Energy",
+    "Consumer",
+    "History",
+  ];
+  const symbols = [
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "META",
+    "NVDA",
+    "HSBA.L",
+    "9984.T",
+  ];
+  const quarters = ["Q1", "Q2", "Q3", "Q4"];
+
+  return Array.from({ length: count }, () => {
+    const price = Math.random() * 1000;
+    const volume = Math.floor(Math.random() * 10000000);
+
+    return {
+      category:
+        categories[Math.floor(Math.floor(Math.random() * categories.length))],
+      region: regions[Math.floor(Math.random() * regions.length)],
+      sector: sectors[Math.floor(Math.random() * sectors.length)],
+      symbol: symbols[Math.floor(Math.random() * symbols.length)],
+      year: Math.floor(Math.random() * (2024 - 2020) + 2020),
+      quarter: quarters[Math.floor(Math.random() * quarters.length)],
+      volume: volume,
+      price: Number(price.toFixed(2)),
+      amount: Number((price * volume).toFixed(2)),
+    };
+  });
+};
+
+const sampleData = generateRandomData(1000);
+
+console.log(sampleData);
+
 const Home = () => {
   return (
     <>
@@ -25,76 +88,15 @@ const Home = () => {
       <div className="flex flex-col gap-2 pb-3">
         <div className="flex flex-col w-4/5 mx-auto gap-2">
           <PivotTableUI
-            data={[
-              {
-                region: "Americas",
-                sector: "Technology",
-                symbol: "AAPL",
-                year: 2024,
-                quarter: "Q4",
-                volume: 1250000,
-                price: 185.75,
-                amount: 232187500,
-              },
-              {
-                region: "Americas",
-                sector: "Technology",
-                symbol: "MSFT",
-                year: 2023,
-                quarter: "Q4",
-                volume: 980000,
-                price: 375.28,
-                amount: 367774400,
-              },
-              {
-                region: "Europe",
-                sector: "Finance",
-                symbol: "HSBA.L",
-                year: 2023,
-                quarter: "Q4",
-                volume: 2100000,
-                price: 62.15,
-                amount: 130515000,
-              },
-              {
-                region: "Asia",
-                sector: "Technology",
-                symbol: "9984.T",
-                year: 2023,
-                quarter: "Q4",
-                volume: 1500000,
-                price: 6781,
-                amount: 10171500000,
-              },
-              {
-                region: "Europe",
-                sector: "Energy",
-                symbol: "SHEL.L",
-                year: 2023,
-                quarter: "Q4",
-                volume: 890000,
-                price: 2524.5,
-                amount: 2246805000,
-              },
-              {
-                region: "Europe",
-                sector: "Energy",
-                symbol: "SHEL.L",
-                year: 2023,
-                quarter: "Q3",
-                volume: 890000,
-                price: 2524.5,
-                amount: 2246805000,
-              },
-            ]}
+            data={sampleData}
             config={{
               showRowTotal: true,
-              rowDimensions: ["region", "sector"],
+              rowDimensions: ["region", "sector", "symbol"],
               tableConfigs: [
                 {
                   id: "asdsadsa",
-                  colDimensions: ["year", "quarter"],
-                  valueDimension: "amount",
+                  colDimensions: ["year", "quarter", "category"],
+                  valueDimension: "price",
                   formatType: "currency",
                   showColumnTotal: true,
                 },

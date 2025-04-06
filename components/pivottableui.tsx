@@ -264,8 +264,10 @@ export function PivotTableUI({
       setIsLoadingRows(true);
       const hierarchicalRows =
         await pivotTableRef.current.getHierarchicalRows();
+      console.log(hierarchicalRows);
       const headers = await pivotTableRef.current.getHeaders();
       setHeaders(headers);
+      console.log(headers);
       setRows(hierarchicalRows);
     } catch (err) {
       console.error("Error loading virtualized rows:", err);

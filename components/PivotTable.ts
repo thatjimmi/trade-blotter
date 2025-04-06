@@ -38,26 +38,36 @@ const getDimensionType = (data: DataRow[], dimension: string): "string" | "numbe
 };
 
 const formatValue = (value: number, formatType: FormatType): string => {
+  // Ensure value is a number
+  const numericValue = typeof value === 'number' ? value : parseFloat(String(value));
+  if (isNaN(numericValue)) return '0';
+
   switch (formatType) {
     case "currency":
       return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(value);
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(numericValue);
     case "percent":
       return new Intl.NumberFormat("en-US", {
         style: "percent",
         minimumFractionDigits: 2,
-      }).format(value / 100);
+        maximumFractionDigits: 2
+      }).format(numericValue / 100);
     case "eur":
       return new Intl.NumberFormat("de-DE", {
         style: "currency",
         currency: "EUR",
-      }).format(value);
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(numericValue);
     default:
       return new Intl.NumberFormat("en-US", {
-        maximumFractionDigits: 2,
-      }).format(value);
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(numericValue);
   }
 };
 
@@ -80,10 +90,8 @@ export class PivotTable {
     
     try {
       console.log('Initializing PivotTable worker...');
-      await this.workerService.initialize();
-      console.log('Loading data into worker...');
+      await this.workerService.initialize();      
       await this.workerService.loadData(this.data);
-      console.log('Worker initialization complete');
       this.isInitialized = true;
     } catch (error) {
       console.error('Failed to initialize worker:', error);
@@ -226,24 +234,38 @@ export class PivotTable {
         config
       );
 
-      const combinations = await this.getColumnCombinations(config);
+      const combinations = await this.getColumnCombinations(config)
+
       combinations.forEach((combo) => {
         const matchingValue = calculatedValues.find(v => 
-          v.dimensions.every((dim, i) => dim === combo[i])
+          v.dimensions.every((dim, i) => String(dim) === String(combo[i]))
         );
 
+        const numericValue = matchingValue?.value || 0;
+        const isPositive = numericValue > 0;
+        const isNegative = numericValue < 0;
+
         values.push({
-          content: formatValue(matchingValue?.value || 0, config.formatType),
-          isNumber: true
+          content: formatValue(numericValue, config.formatType),
+          isNumber: true,
+          isPositive,
+          isNegative,
+          rawValue: numericValue
         });
       });
 
       if (config.showColumnTotal) {
         const total = calculatedValues.reduce((sum, v) => sum + (v.value || 0), 0);
+        const isPositive = total > 0;
+        const isNegative = total < 0;
+
         values.push({
           content: formatValue(total, config.formatType),
           isNumber: true,
-          isTotal: true
+          isTotal: true,
+          isPositive,
+          isNegative,
+          rawValue: total
         });
       }
     }
@@ -271,19 +293,32 @@ export class PivotTable {
         v.dimensions.every((dim, i) => dim === combo[i])
       );
 
+      const numericValue = matchingValue?.value || 0;
+      const isPositive = numericValue > 0;
+      const isNegative = numericValue < 0;
+
       values.push({
-        content: formatValue(matchingValue?.value || 0, tableConfig.formatType),
+        content: formatValue(numericValue, tableConfig.formatType),
         isNumber: true,
-        isTotal: true
+        isTotal: true,
+        isPositive,
+        isNegative,
+        rawValue: numericValue
       });
     });
 
     if (tableConfig.showColumnTotal) {
       const grandTotal = calculatedValues.reduce((sum, v) => sum + (v.value || 0), 0);
+      const isPositive = grandTotal > 0;
+      const isNegative = grandTotal < 0;
+
       values.push({
         content: formatValue(grandTotal, tableConfig.formatType),
         isNumber: true,
-        isTotal: true
+        isTotal: true,
+        isPositive,
+        isNegative,
+        rawValue: grandTotal
       });
     }
 
@@ -333,9 +368,47 @@ export class PivotTable {
         dimensionValues.map(async (value) => {
           const newPath = [...path, value];
           const children = await buildRowHierarchy(newPath, depth + 1);
-          const rowValues = await this.calculateRowValues(newPath);
-          const rowId = `row-${newPath.join("-")}`;
+          
+          // Get this row's direct values
+          const directValues = await this.calculateRowValues(newPath);
+          
+          // If there are children, sum up their values
+          let rowValues = directValues;
+          if (children && children.length > 0) {
+            let currentConfigIndex = 0;
+            let currentValueIndex = 0;
+            
+            rowValues = await Promise.all(directValues.map(async (value, index) => {
+              const config = this.config.tableConfigs[currentConfigIndex];
+              
+              // Sum up the corresponding values from all children
+              const childSum = children.reduce((sum, child) => {
+                const childValue = child.values[index];
+                return sum + (childValue.rawValue || 0);
+              }, 0);
 
+              // Move to next config if we've processed all values for current config
+              // Each config has N values for combinations + 1 for total if showColumnTotal is true
+              const combinations = await this.getColumnCombinations(config);
+              const combinationsLength = value.isTotal ? 1 : combinations.length;
+              currentValueIndex++;
+              if (currentValueIndex >= combinationsLength) {
+                currentValueIndex = 0;
+                currentConfigIndex++;
+              }
+              
+              return {
+                content: formatValue(childSum, config.formatType),
+                isNumber: true,
+                isTotal: value.isTotal,
+                isPositive: childSum > 0,
+                isNegative: childSum < 0,
+                rawValue: childSum
+              };
+            }));
+          }
+
+          const rowId = `row-${newPath.join("-")}`;
           return {
             id: rowId,
             content: value,
