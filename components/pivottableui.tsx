@@ -295,7 +295,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
     const cells = [
       <td
         key="header"
-        className="sticky left-0 bg-[#0B0B0F] group-hover:bg-gray-900/30 z-10 font-medium border-r border-gray-800 px-4 py-2 text-sm"
+        className="sticky left-0 bg-[#0B0B0F] group-hover:bg-gray-900/30 z-40 font-medium border-r border-gray-800 px-4 py-2 text-sm"
       >
         <div className="flex items-center">
           <span style={{ marginLeft: `${row.depth * 1.5}rem` }} />
@@ -326,9 +326,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
           className={`
             px-4 py-2 text-sm text-right border-l border-gray-800
             ${
-              value.isTotal
-                ? "bg-gray-900/50 font-medium sticky right-0 z-10"
-                : ""
+              value.isTotal ? "bg-gray-900 font-medium sticky right-0 z-30" : ""
             }
             ${value.isPositive ? "text-green-400" : ""}
             ${value.isNegative ? "text-red-400" : ""}
@@ -353,21 +351,19 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
       ];
 
       if (row.isExpanded && row.children) {
-        // Pass false for nested levels to prevent multiple grand totals
         mainRow.push(...renderRows(row.children, false));
       }
 
       return mainRow;
     });
 
-    // Only add grand total row at the root level
     if (isRootLevel && config.showRowTotal) {
       result.push(
         <tr
           key="grand-total"
-          className="bg-gray-900/30 font-medium sticky bottom-0 z-20"
+          className="bg-gray-900 font-medium sticky bottom-0 z-40"
         >
-          <td className="sticky left-0 bg-gray-900/30 z-10 px-4 py-2 text-sm border-r border-gray-800">
+          <td className="sticky left-0 bg-gray-900 z-40 px-4 py-2 text-sm border-r border-gray-800">
             Total
           </td>
           {config.tableConfigs.flatMap((tableConfig) => {
@@ -375,7 +371,10 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
             return values.map((value, idx) => (
               <td
                 key={`total-${idx}`}
-                className="px-4 py-2 text-sm text-right font-medium border-l border-gray-800"
+                className={`
+                  px-4 py-2 text-sm text-right font-medium border-l border-gray-800 bg-gray-900
+                  ${value.isTotal ? "sticky right-0 z-30" : ""}
+                `}
               >
                 {value.content}
               </td>
@@ -512,7 +511,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
       {/* Table */}
       <div className="overflow-x-auto border border-gray-800 rounded-lg max-h-[680px] relative">
         <table className="min-w-full divide-y divide-gray-800">
-          <thead className="sticky top-0 z-20 bg-[#0B0B0F]">
+          <thead className="sticky top-0 z-50 bg-[#0B0B0F]">
             {headers.map((headerRow, rowIndex) => (
               <tr key={rowIndex} className="bg-[#0B0B0F]">
                 {headerRow.map((header, colIndex) => (
@@ -524,10 +523,10 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
                       px-4 py-2 text-left text-sm font-medium text-gray-400 border border-r-0 border-t-0 border-gray-800
                       ${
                         header.isRowHeader
-                          ? "sticky left-0 bg-[#0B0B0F] z-10 border-r border-gray-800 border-l-0"
-                          : ""
+                          ? "sticky left-0 bg-[#0B0B0F] z-50 border-r border-gray-800 border-l-0"
+                          : "bg-[#0B0B0F]"
                       }
-                      ${header.isTotal ? "bg-gray-900" : ""}
+                      ${header.isTotal ? "bg-gray-900 sticky right-0" : ""}
                     `}
                   >
                     {header.content}
