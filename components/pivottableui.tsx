@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, Plus, X } from "lucide-react";
 import { PivotTable } from "./PivotTable";
 
-interface ColorTheme {
+export interface ColorTheme {
   background: string;
   backgroundSecondary: string;
   backgroundTertiary: string;
@@ -16,6 +16,7 @@ interface ColorTheme {
   buttonBackground: string;
   buttonHover: string;
   buttonText: string;
+  divider: string;
 }
 
 const defaultTheme: ColorTheme = {
@@ -32,6 +33,7 @@ const defaultTheme: ColorTheme = {
   buttonBackground: "bg-gray-800",
   buttonHover: "hover:bg-gray-700",
   buttonText: "text-gray-300",
+  divider: "divide-gray-800",
 };
 
 const TableConfigPanel = ({
@@ -597,7 +599,7 @@ const PivotTableUI = ({
       <div
         className={`overflow-x-auto border ${theme.border} rounded-lg max-h-[680px] relative`}
       >
-        <table className="min-w-full divide-y divide-gray-800">
+        <table className={`min-w-full divide-y ${theme.divider}`}>
           <thead className={`sticky top-0 z-50 ${theme.background}`}>
             {headers.map((headerRow, rowIndex) => (
               <tr key={rowIndex} className={theme.background}>
@@ -628,7 +630,7 @@ const PivotTableUI = ({
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className={`divide-y ${theme.divider}`}>
             {renderRows(getHierarchicalRows())}
           </tbody>
         </table>

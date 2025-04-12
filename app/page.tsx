@@ -5,11 +5,27 @@ import StockAnalysis from "@/components/market-analysic";
 import StockMetrics from "@/components/metrics";
 import NavBar from "@/components/navbar";
 import NewsFeed from "@/components/newsfeed";
-import PivotTableUI from "@/components/pivottableui";
+import PivotTableUI, { ColorTheme } from "@/components/pivottableui";
 import StockChart from "@/components/stockchart";
 import StockScreener from "@/components/stockscreener";
 import StockTable from "@/components/stocktable";
 import TradeBlotter from "@/components/tradeblotter";
+
+const whiteTheme: ColorTheme = {
+  background: "bg-white",
+  backgroundSecondary: "bg-gray-50",
+  backgroundTertiary: "bg-white/50",
+  textPrimary: "text-gray-900",
+  textSecondary: "text-gray-600",
+  textTertiary: "text-gray-400",
+  border: "border-gray-200",
+  hover: "hover:bg-gray-100",
+  positive: "text-green-600",
+  negative: "text-red-600",
+  buttonBackground: "bg-gray-100",
+  buttonHover: "hover:bg-gray-200",
+  buttonText: "text-gray-700",
+};
 
 const Home = () => {
   return (
@@ -221,6 +237,7 @@ const Home = () => {
               ],
               filters: {},
             }}
+            theme={whiteTheme}
             configureable={false}
           />
         </div>
