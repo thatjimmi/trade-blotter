@@ -238,7 +238,7 @@ const Home = () => {
               ],
               filters: {},
             }}
-            theme={whiteTheme}
+            // theme={whiteTheme}
             configureable={false}
           />
         </div>
