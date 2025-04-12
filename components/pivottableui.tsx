@@ -503,7 +503,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto border border-gray-800 rounded-lg">
+      <div className="overflow-x-auto border border-gray-800 rounded-lg max-h-[680px]">
         <table className="min-w-full divide-y divide-gray-800">
           <thead>
             {headers.map((headerRow, rowIndex) => (
