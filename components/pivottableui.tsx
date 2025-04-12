@@ -295,7 +295,8 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
     const cells = [
       <td
         key="header"
-        className="sticky left-0 bg-[#0B0B0F] group-hover:bg-gray-900/30 z-40 font-medium border-r border-gray-800 px-4 py-2 text-sm"
+        className="sticky left-0 bg-[#0B0B0F] font-medium border-r border-gray-800 px-4 py-2 text-sm z-40
+          group-hover:bg-gray-900 transition-colors"
       >
         <div className="flex items-center">
           <span style={{ marginLeft: `${row.depth * 1.5}rem` }} />
@@ -324,9 +325,11 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
         <td
           key={`value-${index}`}
           className={`
-            px-4 py-2 text-sm text-right border-l border-gray-800
+            px-4 py-2 text-sm text-right border-l border-gray-800 group-hover:bg-gray-900/30
             ${
-              value.isTotal ? "bg-gray-900 font-medium sticky right-0 z-30" : ""
+              value.isTotal
+                ? "bg-gray-900 font-medium sticky right-0 z-30 group-hover:bg-gray-900"
+                : ""
             }
             ${value.isPositive ? "text-green-400" : ""}
             ${value.isNegative ? "text-red-400" : ""}
@@ -345,7 +348,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
 
     const result = rows.flatMap((row) => {
       const mainRow = [
-        <tr key={row.id} className="group hover:bg-gray-900/30">
+        <tr key={row.id} className="group">
           {renderRow(row)}
         </tr>,
       ];
