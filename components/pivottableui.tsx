@@ -325,7 +325,11 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
           key={`value-${index}`}
           className={`
             px-4 py-2 text-sm text-right border-l border-gray-800
-            ${value.isTotal ? "bg-gray-900/50 font-medium" : ""}
+            ${
+              value.isTotal
+                ? "bg-gray-900/50 font-medium sticky right-0 z-10"
+                : ""
+            }
             ${value.isPositive ? "text-green-400" : ""}
             ${value.isNegative ? "text-red-400" : ""}
           `}
@@ -359,7 +363,10 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
     // Only add grand total row at the root level
     if (isRootLevel && config.showRowTotal) {
       result.push(
-        <tr key="grand-total" className="bg-gray-900/30 font-medium">
+        <tr
+          key="grand-total"
+          className="bg-gray-900/30 font-medium sticky bottom-0 z-20"
+        >
           <td className="sticky left-0 bg-gray-900/30 z-10 px-4 py-2 text-sm border-r border-gray-800">
             Total
           </td>
@@ -503,9 +510,9 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto border border-gray-800 rounded-lg max-h-[680px]">
+      <div className="overflow-x-auto border border-gray-800 rounded-lg max-h-[680px] relative">
         <table className="min-w-full divide-y divide-gray-800">
-          <thead>
+          <thead className="sticky top-0 z-20 bg-[#0B0B0F]">
             {headers.map((headerRow, rowIndex) => (
               <tr key={rowIndex} className="bg-[#0B0B0F]">
                 {headerRow.map((header, colIndex) => (
