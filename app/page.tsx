@@ -25,6 +25,7 @@ const whiteTheme: ColorTheme = {
   buttonBackground: "bg-gray-100",
   buttonHover: "hover:bg-gray-200",
   buttonText: "text-gray-700",
+  divider: "divide-gray-200",
 };
 
 const Home = () => {
