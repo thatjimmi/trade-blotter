@@ -2,6 +2,40 @@ import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, Plus, X } from "lucide-react";
 import { PivotTable } from "./PivotTable";
 
+export interface ColorTheme {
+  background: string;
+  backgroundSecondary: string;
+  backgroundTertiary: string;
+  textPrimary: string;
+  textSecondary: string;
+  textTertiary: string;
+  border: string;
+  hover: string;
+  positive: string;
+  negative: string;
+  buttonBackground: string;
+  buttonHover: string;
+  buttonText: string;
+  divider: string;
+}
+
+const defaultTheme: ColorTheme = {
+  background: "bg-[#0B0B0F]",
+  backgroundSecondary: "bg-gray-900",
+  backgroundTertiary: "bg-[#0B0B0F]/50",
+  textPrimary: "text-gray-300",
+  textSecondary: "text-gray-400",
+  textTertiary: "text-gray-500",
+  border: "border-gray-800",
+  hover: "hover:bg-gray-800",
+  positive: "text-green-400",
+  negative: "text-red-400",
+  buttonBackground: "bg-gray-800",
+  buttonHover: "hover:bg-gray-700",
+  buttonText: "text-gray-300",
+  divider: "divide-gray-800",
+};
+
 const TableConfigPanel = ({
   config,
   index,
@@ -10,14 +44,19 @@ const TableConfigPanel = ({
   onUpdate,
   onRemove,
   showRemove,
+  theme = defaultTheme,
 }) => (
-  <div className="p-4 border border-gray-800 rounded-lg bg-[#0B0B0F]/50 space-y-4">
+  <div
+    className={`p-4 border ${theme.border} rounded-lg ${theme.backgroundTertiary} space-y-4`}
+  >
     <div className="flex justify-between items-center">
-      <h3 className="text-sm font-medium text-gray-400">Table {index + 1}</h3>
+      <h3 className={`text-sm font-medium ${theme.textSecondary}`}>
+        Table {index + 1}
+      </h3>
       {showRemove && (
         <button
           onClick={() => onRemove(config.id)}
-          className="text-gray-500 hover:text-gray-300 text-lg p-1"
+          className={`${theme.textTertiary} ${theme.hover} ${theme.textPrimary} text-lg p-1`}
         >
           x
         </button>
@@ -26,7 +65,7 @@ const TableConfigPanel = ({
 
     <div className="space-y-4">
       <div>
-        <label className="block text-xs mb-1 text-gray-400">
+        <label className={`block text-xs mb-1 ${theme.textSecondary}`}>
           Column Dimensions
         </label>
         <MultiSelect
@@ -36,11 +75,12 @@ const TableConfigPanel = ({
             onUpdate(config.id, { ...config, colDimensions: values })
           }
           placeholder="Select column dimensions"
+          theme={theme}
         />
       </div>
 
       <div>
-        <label className="block text-xs mb-1 text-gray-400">
+        <label className={`block text-xs mb-1 ${theme.textSecondary}`}>
           Value Dimension
         </label>
         <MultiSelect
@@ -50,18 +90,21 @@ const TableConfigPanel = ({
             onUpdate(config.id, { ...config, valueDimension: values[0] })
           }
           placeholder="Select value dimension"
+          theme={theme}
         />
       </div>
 
       <div>
-        <label className="block text-xs mb-1 text-gray-400">Format Type</label>
+        <label className={`block text-xs mb-1 ${theme.textSecondary}`}>
+          Format Type
+        </label>
         <select
           value={config.formatType}
           onChange={(e) =>
             onUpdate(config.id, { ...config, formatType: e.target.value })
           }
-          className="w-full p-2 rounded-lg bg-[#0B0B0F] text-gray-300 border border-gray-800 
-            focus:outline-none focus:ring-2 focus:ring-gray-700"
+          className={`w-full p-2 rounded-lg ${theme.background} ${theme.textPrimary} border ${theme.border} 
+            focus:outline-none focus:ring-2 focus:ring-gray-700`}
         >
           <option value="number">Number</option>
           <option value="currency">Currency (USD)</option>
@@ -71,7 +114,9 @@ const TableConfigPanel = ({
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="block text-xs text-gray-400">Total Options</label>
+        <label className={`block text-xs ${theme.textSecondary}`}>
+          Total Options
+        </label>
         <div className="flex gap-4">
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -83,7 +128,7 @@ const TableConfigPanel = ({
                   showColumnTotal: e.target.checked,
                 })
               }
-              className="rounded bg-gray-900 border-gray-700"
+              className={`rounded ${theme.backgroundSecondary} ${theme.border}`}
             />
             Show Column Total
           </label>
@@ -93,28 +138,48 @@ const TableConfigPanel = ({
   </div>
 );
 
-const MultiSelect = ({ options, value, onChange, placeholder }) => (
+const MultiSelect = ({
+  options,
+  value,
+  onChange,
+  placeholder,
+  theme = defaultTheme,
+}) => (
   <select
     multiple
     value={value}
     onChange={(e) =>
       onChange([...e.target.selectedOptions].map((opt) => opt.value))
     }
-    className="w-full p-2 rounded-lg bg-[#0B0B0F] text-gray-300 border border-gray-800 
-      focus:outline-none focus:ring-2 focus:ring-gray-700"
+    className={`w-full p-2 rounded-lg ${theme.background} ${theme.textPrimary} border ${theme.border} 
+      focus:outline-none focus:ring-2 focus:ring-gray-700`}
   >
-    <option value="" disabled className="bg-[#0B0B0F]">
+    <option value="" disabled className={theme.background}>
       {placeholder}
     </option>
     {options.map((opt) => (
-      <option key={opt} value={opt} className="bg-[#0B0B0F] text-gray-300">
+      <option
+        key={opt}
+        value={opt}
+        className={`${theme.background} ${theme.textPrimary}`}
+      >
         {opt}
       </option>
     ))}
   </select>
 );
 
-const PivotTableUI = ({ data, initialConfig, configureable }) => {
+const PivotTableUI = ({
+  data,
+  initialConfig,
+  configureable,
+  theme = defaultTheme,
+}: {
+  data: any;
+  initialConfig: any;
+  configureable: boolean;
+  theme?: ColorTheme;
+}) => {
   const [pivotTable, setPivotTable] = useState(null);
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [showConfig, setShowConfig] = useState(configureable);
@@ -295,23 +360,26 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
     const cells = [
       <td
         key="header"
-        className="sticky left-0 bg-[#0B0B0F] group-hover:bg-gray-900/30 z-10 font-medium border-r border-gray-800 px-4 py-2 text-sm"
+        className={`sticky left-0 ${theme.background} font-medium border-r ${theme.border} px-4 py-2 text-sm z-40
+          group-hover:${theme.backgroundSecondary} transition-colors`}
       >
         <div className="flex items-center">
           <span style={{ marginLeft: `${row.depth * 1.5}rem` }} />
           {row.children && (
             <button
               onClick={() => toggleRowExpansion(row.id)}
-              className="mr-2 p-1 hover:bg-gray-800 rounded-full"
+              className={`mr-2 p-1 ${theme.hover} rounded-full`}
             >
               {row.isExpanded ? (
-                <ChevronDown className="h-4 w-4 text-gray-400" />
+                <ChevronDown className={`h-4 w-4 ${theme.textSecondary}`} />
               ) : (
-                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <ChevronRight className={`h-4 w-4 ${theme.textSecondary}`} />
               )}
             </button>
           )}
-          <span className="text-gray-400 group-hover:text-gray-300">
+          <span
+            className={`${theme.textSecondary} group-hover:${theme.textPrimary}`}
+          >
             {row.content}
           </span>
         </div>
@@ -324,10 +392,16 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
         <td
           key={`value-${index}`}
           className={`
-            px-4 py-2 text-sm text-right border-l border-gray-800
-            ${value.isTotal ? "bg-gray-900/50 font-medium" : ""}
-            ${value.isPositive ? "text-green-400" : ""}
-            ${value.isNegative ? "text-red-400" : ""}
+            px-4 py-2 text-sm text-right border-l ${theme.border} group-hover:${
+            theme.backgroundSecondary
+          }/30
+            ${
+              value.isTotal
+                ? `${theme.backgroundSecondary} font-medium sticky right-0 z-30 group-hover:${theme.backgroundSecondary}`
+                : ""
+            }
+            ${value.isPositive ? theme.positive : ""}
+            ${value.isNegative ? theme.negative : ""}
           `}
         >
           {value.content}
@@ -343,24 +417,27 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
 
     const result = rows.flatMap((row) => {
       const mainRow = [
-        <tr key={row.id} className="group hover:bg-gray-900/30">
+        <tr key={row.id} className="group">
           {renderRow(row)}
         </tr>,
       ];
 
       if (row.isExpanded && row.children) {
-        // Pass false for nested levels to prevent multiple grand totals
         mainRow.push(...renderRows(row.children, false));
       }
 
       return mainRow;
     });
 
-    // Only add grand total row at the root level
     if (isRootLevel && config.showRowTotal) {
       result.push(
-        <tr key="grand-total" className="bg-gray-900/30 font-medium">
-          <td className="sticky left-0 bg-gray-900/30 z-10 px-4 py-2 text-sm border-r border-gray-800">
+        <tr
+          key="grand-total"
+          className={`${theme.backgroundSecondary} font-medium sticky bottom-0 z-40`}
+        >
+          <td
+            className={`sticky left-0 ${theme.backgroundSecondary} z-40 px-4 py-2 text-sm border-r ${theme.border}`}
+          >
             Total
           </td>
           {config.tableConfigs.flatMap((tableConfig) => {
@@ -368,7 +445,12 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
             return values.map((value, idx) => (
               <td
                 key={`total-${idx}`}
-                className="px-4 py-2 text-sm text-right font-medium border-l border-gray-800"
+                className={`
+                  px-4 py-2 text-sm text-right font-medium border-l ${
+                    theme.border
+                  } ${theme.backgroundSecondary}
+                  ${value.isTotal ? "sticky right-0 z-30" : ""}
+                `}
               >
                 {value.content}
               </td>
@@ -383,15 +465,15 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
 
   return (
     <div
-      className={`w-full space-y-6 bg-[#0B0B0F] text-gray-300 ${
+      className={`w-full space-y-6 ${theme.background} ${theme.textPrimary} ${
         configureable && "p-6"
-      } rounded-xl border border-slate-800`}
+      } rounded-xl border ${theme.border}`}
     >
       {/* Toggle Configuration Button */}
       {configureable && (
         <button
           onClick={() => setShowConfig(!showConfig)}
-          className="flex items-center gap-2 px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
+          className={`flex items-center gap-2 px-3 py-1 rounded-lg ${theme.buttonBackground} ${theme.buttonHover} ${theme.buttonText} transition-colors`}
         >
           {showConfig ? "Hide Configuration" : "Show Configuration"}
         </button>
@@ -402,7 +484,9 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
         <div className="space-y-6">
           {/* Row Dimensions */}
           <div>
-            <label className="block text-sm font-medium mb-2 text-gray-400">
+            <label
+              className={`block text-sm font-medium mb-2 ${theme.textSecondary}`}
+            >
               Row Dimensions
             </label>
             <MultiSelect
@@ -410,19 +494,20 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
               value={config.rowDimensions}
               onChange={handleRowDimensionChange}
               placeholder="Select dimensions"
+              theme={theme}
             />
           </div>
 
           {/* Table Configurations */}
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-sm font-medium text-gray-400">
+              <h3 className={`text-sm font-medium ${theme.textSecondary}`}>
                 Table Configurations
               </h3>
               <button
                 onClick={addNewTable}
-                className="flex items-center gap-2 px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 
-                  text-gray-300 transition-colors"
+                className={`flex items-center gap-2 px-3 py-1 rounded-lg ${theme.buttonBackground} ${theme.buttonHover} 
+                  ${theme.buttonText} transition-colors`}
               >
                 <Plus className="h-4 w-4" />
                 Add Table
@@ -439,6 +524,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
                   onUpdate={updateTableConfig}
                   onRemove={removeTable}
                   showRemove={tableConfigs.length > 1}
+                  theme={theme}
                 />
               ))}
             </div>
@@ -446,14 +532,16 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
 
           {/* Total Configuration */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-400">Total Options</h3>
+            <h3 className={`text-sm font-medium ${theme.textSecondary}`}>
+              Total Options
+            </h3>
             <div className="flex flex-col gap-2">
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={config.showRowTotal}
                   onChange={(e) => handleRowTotalToggle(e.target.checked)}
-                  className="rounded bg-gray-900 border-gray-700"
+                  className={`rounded ${theme.backgroundSecondary} ${theme.border}`}
                 />
                 <span className="text-sm">Show Grand Total Row</span>
               </label>
@@ -464,7 +552,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
                   onChange={(e) =>
                     handleExpandedByDefaultToggle(e.target.checked)
                   }
-                  className="rounded bg-gray-900 border-gray-700"
+                  className={`rounded ${theme.backgroundSecondary} ${theme.border}`}
                 />
                 <span className="text-sm">Expand All Rows by Default</span>
               </label>
@@ -474,10 +562,12 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
           {/* Filters */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <h3 className="text-sm font-medium text-gray-400">Filters</h3>
+              <h3 className={`text-sm font-medium ${theme.textSecondary}`}>
+                Filters
+              </h3>
               <button
                 onClick={clearAllFilters}
-                className="flex items-center gap-2 px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
+                className={`flex items-center gap-2 px-3 py-1 rounded-lg ${theme.buttonBackground} ${theme.buttonHover} ${theme.buttonText} transition-colors`}
               >
                 <X className="h-4 w-4" />
                 Clear Filters
@@ -486,7 +576,9 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
             <div className="flex flex-wrap gap-4">
               {dimensions.map((dimension) => (
                 <div key={dimension}>
-                  <label className="block text-xs mb-1 text-gray-400">
+                  <label
+                    className={`block text-xs mb-1 ${theme.textSecondary}`}
+                  >
                     {dimension}
                   </label>
                   <MultiSelect
@@ -494,6 +586,7 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
                     value={config.filters[dimension] || []}
                     onChange={(values) => handleFilterChange(dimension, values)}
                     placeholder={`Filter ${dimension}`}
+                    theme={theme}
                   />
                 </div>
               ))}
@@ -503,38 +596,41 @@ const PivotTableUI = ({ data, initialConfig, configureable }) => {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto border border-gray-800 rounded-lg">
-        <table className="min-w-full divide-y divide-gray-800">
-          <thead>
+      <div
+        className={`overflow-x-auto border ${theme.border} rounded-lg max-h-[680px] relative`}
+      >
+        <table className={`min-w-full divide-y ${theme.divider}`}>
+          <thead className={`sticky top-0 z-50 ${theme.background}`}>
             {headers.map((headerRow, rowIndex) => (
-              <tr key={rowIndex} className="bg-[#0B0B0F]">
+              <tr key={rowIndex} className={theme.background}>
                 {headerRow.map((header, colIndex) => (
                   <th
                     key={colIndex}
                     rowSpan={header.rowSpan}
                     colSpan={header.colSpan}
                     className={`
-                      px-4 py-2 text-left text-sm font-medium text-gray-400 border border-r-0 border-t-0 border-gray-800
+                      px-4 py-2 text-left text-sm font-medium ${
+                        theme.textSecondary
+                      } border border-r-0 border-t-0 ${theme.border}
                       ${
                         header.isRowHeader
-                          ? "sticky left-0 bg-[#0B0B0F] z-10 border-r border-gray-800 border-l-0"
+                          ? `sticky left-0 ${theme.background} z-50 border-r ${theme.border} border-l-0`
+                          : theme.background
+                      }
+                      ${
+                        header.isTotal
+                          ? `${theme.backgroundSecondary} sticky right-0`
                           : ""
                       }
-                      ${header.isTotal ? "bg-gray-900" : ""}
                     `}
                   >
                     {header.content}
-                    {header.path && header.path.length > 1 && (
-                      <span className="text-xs text-gray-500 ml-1">
-                        ({header.path.slice(0, -1).join(" → ")})
-                      </span>
-                    )}
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className={`divide-y ${theme.divider}`}>
             {renderRows(getHierarchicalRows())}
           </tbody>
         </table>
