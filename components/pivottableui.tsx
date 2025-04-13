@@ -611,7 +611,7 @@ const PivotTableUI = ({
                     className={`
                       px-4 py-2 text-left text-sm font-medium ${
                         theme.textSecondary
-                      } border border-r-0 border-t-0 ${theme.border}
+                      } border-0 border-r-0 border-t-0 ${theme.border}
                       ${
                         header.isRowHeader
                           ? `sticky left-0 ${theme.background} z-50 border-r ${theme.border} border-l-0`
@@ -619,7 +619,7 @@ const PivotTableUI = ({
                       }
                       ${
                         header.isTotal
-                          ? `${theme.backgroundSecondary} sticky right-0`
+                          ? `${theme.backgroundSecondary} sticky right-0 `
                           : ""
                       }
                     `}
@@ -630,7 +630,7 @@ const PivotTableUI = ({
               </tr>
             ))}
           </thead>
-          <tbody className={`divide-y ${theme.divider}`}>
+          <tbody className={`divide-y  ${theme.divider}`}>
             {renderRows(getHierarchicalRows())}
           </tbody>
         </table>
